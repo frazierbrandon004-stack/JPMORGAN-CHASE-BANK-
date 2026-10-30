@@ -1,51 +1,68 @@
 # JPMORGAN-CHASE-BANK-
 
-This repository provides a minimal starting point for obtaining an OAuth access token from JPMorgan's `id.payments.jpmorgan.com` token endpoint.
+This repository includes a minimal Python OAuth client for JPMorgan's client-credentials token flow.
 
-## Example: request a token using client credentials
+## Prerequisites
 
-Set your credentials before running the request:
+- Python 3.10+
+- A JPMorgan client ID and client secret
+- Access to the JPMorgan token endpoint
 
-```bash
-export CLIENT_ID="your-client-id"
-export CLIENT_SECRET="your-client-secret"
-export SCOPE="openid profile"
-```
+## Setup
 
-Then send the request:
+Create a local environment file from the sample:
 
 ```bash
-curl -X POST "https://id.payments.jpmorgan.com/am/oauth2/alpha/access_token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  --data-urlencode "grant_type=client_credentials" \
-  --data-urlencode "client_id=${CLIENT_ID}" \
-  --data-urlencode "client_secret=${CLIENT_SECRET}" \
-  --data-urlencode "scope=${SCOPE}"
+cp .env.example .env
 ```
 
-The response will be JSON similar to:
+Fill in your real values in `.env`:
 
-```json
-{
-  "access_token": "...",
-  "token_type": "Bearer",
-  "expires_in": 3599
-}
+```dotenv
+CLIENT_ID="your-client-id"
+CLIENT_SECRET="your-client-secret"
+SCOPE="openid profile"
 ```
 
-You can extract the access token with:
+Install dependencies:
 
 ```bash
-curl -s -X POST "https://id.payments.jpmorgan.com/am/oauth2/alpha/access_token" \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  --data-urlencode "grant_type=client_credentials" \
-  --data-urlencode "client_id=${CLIENT_ID}" \
-  --data-urlencode "client_secret=${CLIENT_SECRET}" \
-  --data-urlencode "scope=${SCOPE}" | jq -r '.access_token'
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
 ```
+
+## Run the client
+
+```bash
+python jpmorgan_oauth_client.py
+```
+
+This will request an access token from:
+
+```text
+https://id.payments.jpmorgan.com/am/oauth2/alpha/access_token
+```
+
+The script uses the OAuth 2.0 client credentials flow and prints the token metadata.
 
 ## Notes
 
-- Replace the example values with your own credentials.
-- Ensure the requested scope matches the permissions granted to your client.
-- Treat all tokens as sensitive data and do not commit them to source control.
+- Never commit `.env` to source control.
+- Keep client secrets secure and rotate them as required by your organization.
+- The `scope` value is optional and depends on the permissions granted to your client.
+
+## Example `.env` behavior
+
+The script automatically loads `.env` if it exists in the project root.
+
+## Minimal request flow
+
+```python
+from jpmorgan_oauth_client import get_access_token
+
+token_data = get_access_token()
+print(token_data["access_token"])
+```
+
+This is a starting point for integrating with protected JPMorgan APIs.
